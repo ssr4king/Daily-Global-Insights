@@ -1,37 +1,36 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { type Article, type InsertArticle } from "@shared/schema";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  // In-memory caching for news
+  getCachedNews(category?: string): Promise<Article[] | undefined>;
+  cacheNews(articles: Article[]): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+  private cache: Map<string, { data: Article[], timestamp: number }>;
+  private CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
   constructor() {
-    this.users = new Map();
+    this.cache = new Map();
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getCachedNews(category: string = 'all'): Promise<Article[] | undefined> {
+    const cached = this.cache.get(category);
+    if (!cached) return undefined;
+
+    if (Date.now() - cached.timestamp > this.CACHE_DURATION) {
+      this.cache.delete(category);
+      return undefined;
+    }
+
+    return cached.data;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async cacheNews(articles: Article[], category: string = 'all'): Promise<void> {
+    this.cache.set(category, {
+      data: articles,
+      timestamp: Date.now()
+    });
   }
 }
 
