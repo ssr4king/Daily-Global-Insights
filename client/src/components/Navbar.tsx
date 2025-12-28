@@ -1,13 +1,56 @@
 import { Link, useLocation } from "wouter";
 import { categories } from "@shared/schema";
 import { motion } from "framer-motion";
-import { Globe } from "lucide-react";
+import { Globe, Search } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 
 export function Navbar() {
   const [location] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
 
   // Helper to extract category from path
   const currentCategory = location === "/" ? "all" : location.split("/")[1] || "all";
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Search API query
+  const { data: searchResults, isLoading, error } = useQuery({
+    queryKey: ["search", debouncedQuery],
+    queryFn: async () => {
+      if (!debouncedQuery.trim()) return [];
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`);
+        if (!response.ok) {
+          console.error("Search API error:", response.status);
+          return [];
+        }
+        const data = await response.json();
+        console.log("Search results:", data);
+        return Array.isArray(data) ? data : [];
+      } catch (err) {
+        console.error("Search error:", err);
+        return [];
+      }
+    },
+    enabled: debouncedQuery.length > 0,
+    retry: 1,
+  });
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setShowResults(true);
+  };
 
   return (
     <nav className="sticky top-[41px] z-50 border-b border-white/5 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
@@ -30,7 +73,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-4 flex-1 justify-center">
             <div className="flex items-center gap-1">
               <NavLink 
                 href="/" 
@@ -48,6 +91,64 @@ export function Navbar() {
                   {cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </NavLink>
               ))}
+            </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="hidden md:flex items-center gap-2 relative">
+            <div className="relative w-64">
+              <Input
+                type="text"
+                placeholder="Search news..."
+                value={searchQuery}
+                onChange={handleSearch}
+                onFocus={() => setShowResults(true)}
+                onBlur={() => setTimeout(() => setShowResults(false), 200)}
+                className="w-full pl-10 py-2 rounded-lg bg-white/5 border border-white/10 focus:border-primary text-sm"
+              />
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground pointer-events-none" />
+              
+              {/* Search Results Dropdown */}
+              {showResults && searchQuery && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-background/98 border border-white/10 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto backdrop-blur-sm">
+                  {isLoading ? (
+                    <div className="p-4 text-center text-muted-foreground text-sm">
+                      <span className="inline-block animate-pulse">Searching for "{searchQuery}"...</span>
+                    </div>
+                  ) : error ? (
+                    <div className="p-4 text-center text-red-500 text-sm">
+                      Error loading results. Please try again.
+                    </div>
+                  ) : searchResults && searchResults.length > 0 ? (
+                    <div className="divide-y divide-white/5">
+                      {searchResults.slice(0, 8).map((article: any, idx: number) => (
+                        <a
+                          key={idx}
+                          href={article.url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block p-3 hover:bg-white/10 transition-colors duration-150"
+                        >
+                          <p className="text-sm font-medium text-white truncate">
+                            {article.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1 truncate">
+                            {article.source || "Unknown"}
+                          </p>
+                        </a>
+                      ))}
+                    </div>
+                  ) : debouncedQuery ? (
+                    <div className="p-4 text-center text-muted-foreground text-sm">
+                      No articles found for "{debouncedQuery}"
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-muted-foreground text-sm">
+                      Type to search
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

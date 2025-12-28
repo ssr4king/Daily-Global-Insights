@@ -1,4 +1,4 @@
-import { Globe, Twitter, Github, Linkedin } from "lucide-react";
+import { Globe, Twitter, Github, Linkedin, Instagram } from "lucide-react";
 
 export function Footer() {
   return (
@@ -17,13 +17,15 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-6">
-            <SocialLink icon={<Twitter className="w-5 h-5" />} href="#" />
-            <SocialLink icon={<Github className="w-5 h-5" />} href="#" />
-            <SocialLink icon={<Linkedin className="w-5 h-5" />} href="#" />
+            <SocialLink icon={<Instagram className="w-5 h-5" />} href="https://www.instagram.com/singhshubham0001/?igsh=bXR4eWdkdDYwc243#" title="Instagram" />
+            <SocialLink icon={<Twitter className="w-5 h-5" />} href="https://x.com/Shubhams_Stwt?t=k7YrLLNZysYZ5oYlLeNGEQ&s=09" title="Twitter" />
+            <SocialLink icon={<Github className="w-5 h-5" />} href="https://github.com/ssr4king" title="GitHub" />
+            <SocialLink icon={<Linkedin className="w-5 h-5" />} href="https://www.linkedin.com/in/shubham-dev-ies/" title="LinkedIn" />
           </div>
 
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground text-center md:text-right">
             <p>&copy; {new Date().getFullYear()} Nexus News. Powered by NewsAPI.</p>
+            <p className="text-xs mt-2">Made by <span className="text-primary font-semibold">Shubham Singh Rajput</span></p>
           </div>
         </div>
       </div>
@@ -31,10 +33,13 @@ export function Footer() {
   );
 }
 
-function SocialLink({ icon, href }: { icon: React.ReactNode; href: string }) {
+function SocialLink({ icon, href, title }: { icon: React.ReactNode; href: string; title: string }) {
   return (
     <a 
       href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
       className="p-2 rounded-full bg-white/5 hover:bg-white/10 hover:text-primary transition-colors hover:scale-110 transform duration-200"
     >
       {icon}
