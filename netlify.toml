@@ -8,7 +8,7 @@
 
 [functions]
   node_bundler = "esbuild"
-  included_files = ["dist/**"]
+  included_files = ["server/**", "shared/**"]
 
 [[redirects]]
   from = "/api/*"
