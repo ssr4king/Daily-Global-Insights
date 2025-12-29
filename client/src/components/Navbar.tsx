@@ -5,6 +5,7 @@ import { Globe, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
+import { getApiUrl } from "@/config";
 
 export function Navbar() {
   const [location] = useLocation();
@@ -30,7 +31,7 @@ export function Navbar() {
     queryFn: async () => {
       if (!debouncedQuery.trim()) return [];
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`);
+        const response = await fetch(`${getApiUrl('/api/search')}?q=${encodeURIComponent(debouncedQuery)}`);
         if (!response.ok) {
           console.error("Search API error:", response.status);
           return [];

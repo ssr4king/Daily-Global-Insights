@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type NewsListResponse } from "@shared/routes";
 import { Category } from "@shared/schema";
+import { getApiUrl } from "@/config";
 
 // GET /api/news
 export function useNews(category?: Category) {
@@ -12,7 +13,7 @@ export function useNews(category?: Category) {
       if (category) params.append("category", category);
       params.append("country", "in"); // Default country per requirements
 
-      const url = `${api.news.list.path}?${params.toString()}`;
+      const url = `${getApiUrl(api.news.list.path)}?${params.toString()}`;
       const res = await fetch(url);
       
       if (!res.ok) throw new Error("Failed to fetch news");
