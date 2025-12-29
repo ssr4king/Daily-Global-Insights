@@ -62,7 +62,12 @@ async function buildAll() {
   });
 }
 
-buildAll().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+buildAll()
+  .then(() => {
+    console.log("Build completed successfully");
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error("Build failed:", err);
+    process.exit(1);
+  });
