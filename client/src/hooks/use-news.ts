@@ -28,7 +28,7 @@ export function useSyncNews() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const res = await fetch(api.news.sync.path, {
+      const res = await fetch(getApiUrl(api.news.sync.path), {
         method: api.news.sync.method,
       });
       if (!res.ok) throw new Error("Failed to sync news");
